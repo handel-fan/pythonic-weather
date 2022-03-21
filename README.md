@@ -1,2 +1,2 @@
 # pythonic-weather
-Gets the weather, in Python!
+Gets the weather, using Python!
