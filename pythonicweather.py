@@ -74,11 +74,11 @@ class OpenWeatherJsonParser:
         curr_time = datetime.now(curr_timezone)
 
         csv_arr[0] = location
-        csv_arr[1] = curr_time.strftime("%A %B %-d, %Y")
-        csv_arr[2] = str(open_weather_dictionary["current"]["temp"])
+        csv_arr[1] = curr_time.strftime("%A %B %-d %Y")
+        csv_arr[2] = str(open_weather_dictionary["current"]["temp"]) + "F"
         csv_arr[3] = open_weather_dictionary["current"]["weather"][0]["description"]
-        csv_arr[4] = str(open_weather_dictionary["current"]["pressure"])
-        csv_arr[5] = str(open_weather_dictionary["current"]["humidity"])
+        csv_arr[4] = str(open_weather_dictionary["current"]["pressure"]) + "psi"
+        csv_arr[5] = str(open_weather_dictionary["current"]["humidity"]) + "g.kg^(-1)"
 
         return csv_arr
 
