@@ -142,5 +142,3 @@ if __name__ == "__main__":
     print(args.api_key)
     print(args.csv_file_path)
     main(args.api_key, args.csv_file_path)
-
-    # main("cd5053e95a6f10c7ce89187073e16930", "/home/jegan/pythonic-weather/dump1.csv")
