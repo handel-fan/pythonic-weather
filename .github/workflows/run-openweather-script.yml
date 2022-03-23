@@ -1,0 +1,24 @@
+name: Open Weather Script
+on: 
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 */3 * * *'
+jobs:
+  Run-OpenWeather-Script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+      - name: Execute Python Script
+        run: |
+          python pythonic-weather.py --api_key ${{ secrets.OPEN_WEATHER_API_KEY }} --csv_file_path "./weather.csv"
+      - name: Commit CSV
+        run: |
+          git config --global user.name "GitHub Actions"
+          git add ./weather.csv
+          git commit -m "Comitting CSV"
+          git push origin main
