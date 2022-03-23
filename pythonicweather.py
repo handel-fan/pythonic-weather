@@ -6,6 +6,7 @@ from pytz import timezone
 from os.path import exists
 import re
 import sys
+import argparse
 
 class OpenWeatherAPICall:
     """Make an API Call to OpenWeather!"""
@@ -15,7 +16,7 @@ class OpenWeatherAPICall:
     def open_weather_api_caller(self, api_key, location):
         try:
             response = requests.get(self._url_builder(api_key, location))
-        
+
         except ConnectionError:
             print("Could not connect to server")
             sys.exit(1)
@@ -24,11 +25,11 @@ class OpenWeatherAPICall:
             print("unsuccessful get request")
             sys.exit(1)
 
-        
+
         return response
 
 
-    def _url_builder(self, api_key, location): 
+    def _url_builder(self, api_key, location):
         latitude_string = "lat=" + self._get_latitude(location)
 
         longitude_string = "&lon=" + self._get_longitude(location)
@@ -65,8 +66,6 @@ class OpenWeatherAPICall:
 
 class OpenWeatherJsonParser:
     """Parse the JSON from the API Call and put the useful information in an array!"""
-    
-    
 
     """Given a json string, put relevant information Bostoninto an array!"""
     def parse_json_to_csv_arr(self, response_json_string, location):
@@ -125,16 +124,8 @@ class PythonicWeatherRunner:
 
 def main(api_key, file_out_path):
 
-    # api_caller = OpenWeatherAPICall()
-    # api_response = api_caller.open_weather_api_caller(api_key, "Boston")
-    # json_string = json.dumps(api_response.json())
-    # json_parser = OpenWeatherJsonParser()
-    # boston_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "Boston")
     csv_location_arr = ["Boston", "San Francisco", "London"]
-    # boston_csv_arr = Runner.run_api_to_csv_arr(api_key, "Boston")
-    # san_francisco_csv_arr = Runner.run_api_to_csv_arr(api_key, "San Francisco")
-    # london_csv_arr = Runner.run_api_to_csv_arr(api_key, "London")
-    
+
     for location in csv_location_arr:
         csv_str = ""
 
@@ -144,8 +135,14 @@ def main(api_key, file_out_path):
 
         OpenWeatherFileIO().output_to_file(file_out_path, csv_str)
 
-        
-openweather_api_key = "cd5053e95a6f10c7ce89187073e16930"
-
 if __name__ == "__main__":
-    main(openweather_api_key, "/home/jegan/pythonic-weather/test.csv")
+    print("got here")
+    parser = argparse.ArgumentParser(description = "")
+    parser.add_argument("--api_key", help="Open Weather API Key")
+    parser.add_argument("--csv_file_path", help="CSV File Path")
+    args = parser.parse_args()
+    print(args.api_key)
+    print(args.csv_file_path)
+    main(args.api_key, args.csv_file_path)
+
+    # main("cd5053e95a6f10c7ce89187073e16930", "/home/jegan/pythonic-weather/dump1.csv")
