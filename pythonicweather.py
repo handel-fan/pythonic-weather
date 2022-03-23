@@ -1,0 +1,138 @@
+import csv
+import requests
+import json
+from datetime import datetime
+from pytz import timezone
+from os.path import exists
+import re
+import sys
+
+class OpenWeatherAPICall:
+    """Make an API Call to OpenWeather!"""
+
+    _open_weather_base_url = "https://api.openweathermap.org/data/2.5/onecall?"
+
+    def open_weather_api_caller(self, api_key, location):
+        try:
+            response = requests.get(self._url_builder(api_key, location))
+        
+        except ConnectionError:
+            print("Could not connect to server")
+            sys.exit(1)
+
+        if(response.status_code not in range(200, 299, 1)):
+            print("unsuccessful get request")
+            sys.exit(1)
+
+        
+        return response
+
+
+    def _url_builder(self, api_key, location): 
+        latitude_string = "lat=" + self._get_latitude(location)
+
+        longitude_string = "&lon=" + self._get_longitude(location)
+
+        units_string = "&units=imperial"
+
+        api_key_string = "&appid=" + api_key
+
+        complete_url = self._open_weather_base_url + latitude_string + longitude_string + units_string + api_key_string
+
+        return complete_url
+
+    def _get_latitude(self, location):
+        match location:
+            case "Boston":
+                return "42.36"
+
+            case "San Francisco":
+                return "37.77"
+
+            case "London":
+                return "51.50"
+
+    def _get_longitude(self, location):
+        match location:
+            case "Boston":
+                return "71.05"
+
+            case "San Francisco":
+                return "122.41"
+
+            case "London":
+                return "0.12"
+
+class OpenWeatherJsonParser:
+    """Parse the JSON from the API Call and put the useful information in an array!"""
+    
+    csv_arr = [""] * 6
+
+    """Given a json string, put relevant information Bostoninto an array!"""
+    def parse_json_to_csv_arr(self, response_json_string, location):
+        open_weather_dictionary = json.loads(response_json_string)
+
+        curr_timezone = self._get_timezone(location)
+        curr_time = datetime.now(curr_timezone)
+
+        self.csv_arr[0] = location
+        self.csv_arr[1] = curr_time.strftime("%A %B %-d, %Y")
+        self.csv_arr[2] = str(open_weather_dictionary["current"]["temp"])
+        self.csv_arr[3] = open_weather_dictionary["current"]["weather"][0]["description"]
+        self.csv_arr[4] = str(open_weather_dictionary["current"]["pressure"])
+        self.csv_arr[5] = str(open_weather_dictionary["current"]["humidity"])
+
+        return self.csv_arr
+
+    def _get_timezone(self, location):
+        match location:
+            case "Boston":
+                return timezone("US/Eastern")
+            case "San Francisco":
+                return timezone("US/Pacific")
+            case "London":
+                return timezone("Europe/London")
+
+class OpenWeatherFileIO:
+    """Given a csv file path to output to, if the file already exists, append to it. If not, save to filepath if path is valid (directory that file is saved), throw errors if not."""
+
+
+    """Work in progress! error checks like file validation will be added very soon. (pre-check whether valid directory, filenames without file extensions, etc.)"""
+    def output_to_file(self, filepath, output_string):
+        if(exists(filepath)):
+            with open(filepath, "a") as append_file:
+                append_file.write("\n\n")
+                append_file.write(output_string)
+        else:
+            with open(filepath, "w") as write_file:
+                write_file.write(output_string)
+
+def main(api_key, file_out_path):
+
+    api_caller = OpenWeatherAPICall()
+    api_response = api_caller.open_weather_api_caller(api_key, "Boston")
+    json_string = json.dumps(api_response.json())
+    json_parser = OpenWeatherJsonParser()
+
+    boston_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "Boston")
+    san_francisco_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "San Francisco")
+    london_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "London")
+    
+    csv_string = ""
+
+    for csv_elem in boston_csv_arr:
+        csv_string += csv_elem + ","
+
+    for csv_elem in san_francisco_csv_arr:
+        csv_string += csv_elem + ","
+
+    for csv_elem in london_csv_arr:
+        csv_string += csv_elem + ","
+
+    openweather_fileio = OpenWeatherFileIO()
+    openweather_fileio.output_to_file(file_out_path, csv_string)
+
+openweather_api_key = "cd5053e95a6f10c7ce89187073e16930"
+
+if __name__ == "__main__":
+    main(openweather_api_key, "/home/jegan/pythonic-weather/test.csv")
