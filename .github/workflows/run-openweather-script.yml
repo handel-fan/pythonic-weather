@@ -17,7 +17,7 @@ jobs:
           python-version: 3.10.0
       - name: Execute Python Script
         run: |
-          python pythonic-weather.py --api_key ${{ secrets.OPEN_WEATHER_API_KEY }} --csv_file_path "./weather.csv"
+          python pythonicweather.py --api_key ${{ secrets.OPEN_WEATHER_API_KEY }} --csv_file_path "./weather.csv"
       - name: Commit CSV
         run: |
           git config --global user.name "GitHub Actions"
