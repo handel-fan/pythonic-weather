@@ -1,10 +1,8 @@
-import csv
 import requests
 import json
 from datetime import datetime
 from pytz import timezone
 from os.path import exists
-import re
 import sys
 import argparse
 
