@@ -66,23 +66,24 @@ class OpenWeatherAPICall:
 class OpenWeatherJsonParser:
     """Parse the JSON from the API Call and put the useful information in an array!"""
     
-    csv_arr = [""] * 6
+    
 
     """Given a json string, put relevant information Bostoninto an array!"""
     def parse_json_to_csv_arr(self, response_json_string, location):
+        csv_arr = [""] * 6
         open_weather_dictionary = json.loads(response_json_string)
 
         curr_timezone = self._get_timezone(location)
         curr_time = datetime.now(curr_timezone)
 
-        self.csv_arr[0] = location
-        self.csv_arr[1] = curr_time.strftime("%A %B %-d, %Y")
-        self.csv_arr[2] = str(open_weather_dictionary["current"]["temp"])
-        self.csv_arr[3] = open_weather_dictionary["current"]["weather"][0]["description"]
-        self.csv_arr[4] = str(open_weather_dictionary["current"]["pressure"])
-        self.csv_arr[5] = str(open_weather_dictionary["current"]["humidity"])
+        csv_arr[0] = location
+        csv_arr[1] = curr_time.strftime("%A %B %-d, %Y")
+        csv_arr[2] = str(open_weather_dictionary["current"]["temp"])
+        csv_arr[3] = open_weather_dictionary["current"]["weather"][0]["description"]
+        csv_arr[4] = str(open_weather_dictionary["current"]["pressure"])
+        csv_arr[5] = str(open_weather_dictionary["current"]["humidity"])
 
-        return self.csv_arr
+        return csv_arr
 
     def _get_timezone(self, location):
         match location:
@@ -107,31 +108,43 @@ class OpenWeatherFileIO:
             with open(filepath, "w") as write_file:
                 write_file.write(output_string)
 
+class PythonicWeatherRunner:
+    """For each location, go from API Call to CSV array"""
+
+    def api_to_csv_arr(api_key, location):
+        api_response = OpenWeatherAPICall().open_weather_api_caller(api_key, location)
+        json_string = json.dumps(api_response.json())
+        return OpenWeatherJsonParser().parse_json_to_csv_arr(json_string, location)
+
+    def csv_arr_to_csv_str(csv_arr, csv_str):
+        for csv_elem in csv_arr:
+            csv_str += csv_elem + ","
+
+        return csv_str[:-1]
+
+
 def main(api_key, file_out_path):
 
-    api_caller = OpenWeatherAPICall()
-    api_response = api_caller.open_weather_api_caller(api_key, "Boston")
-    json_string = json.dumps(api_response.json())
-    json_parser = OpenWeatherJsonParser()
-
-    boston_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "Boston")
-    san_francisco_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "San Francisco")
-    london_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "London")
+    # api_caller = OpenWeatherAPICall()
+    # api_response = api_caller.open_weather_api_caller(api_key, "Boston")
+    # json_string = json.dumps(api_response.json())
+    # json_parser = OpenWeatherJsonParser()
+    # boston_csv_arr = json_parser.parse_json_to_csv_arr(json_string, "Boston")
+    csv_location_arr = ["Boston", "San Francisco", "London"]
+    # boston_csv_arr = Runner.run_api_to_csv_arr(api_key, "Boston")
+    # san_francisco_csv_arr = Runner.run_api_to_csv_arr(api_key, "San Francisco")
+    # london_csv_arr = Runner.run_api_to_csv_arr(api_key, "London")
     
-    csv_string = ""
+    for location in csv_location_arr:
+        csv_str = ""
 
-    for csv_elem in boston_csv_arr:
-        csv_string += csv_elem + ","
+        csv_arr = PythonicWeatherRunner.api_to_csv_arr(api_key, location)
 
-    for csv_elem in san_francisco_csv_arr:
-        csv_string += csv_elem + ","
+        csv_str += PythonicWeatherRunner.csv_arr_to_csv_str(csv_arr, csv_str)
 
-    for csv_elem in london_csv_arr:
-        csv_string += csv_elem + ","
+        OpenWeatherFileIO().output_to_file(file_out_path, csv_str)
 
-    openweather_fileio = OpenWeatherFileIO()
-    openweather_fileio.output_to_file(file_out_path, csv_string)
-
+        
 openweather_api_key = "cd5053e95a6f10c7ce89187073e16930"
 
 if __name__ == "__main__":
