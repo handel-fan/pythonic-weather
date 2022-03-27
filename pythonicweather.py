@@ -139,6 +139,4 @@ if __name__ == "__main__":
     parser.add_argument("--api_key", help="Open Weather API Key")
     parser.add_argument("--csv_file_path", help="CSV File Path")
     args = parser.parse_args()
-    print(args.api_key)
-    print(args.csv_file_path)
     main(args.api_key, args.csv_file_path)
